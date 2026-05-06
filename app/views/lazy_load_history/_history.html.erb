@@ -1,17 +1,59 @@
 <%# select top n journal entries %>
 <% initial_journal_count = Setting.plugin_redmine_lazy_load_history['initial_load_count'].to_i %>
+<% load_journal_count = Setting.plugin_redmine_lazy_load_history['load_count'].to_i %>
+<% issue = tab[:locals][:issue] %>
 <% journals = tab[:locals][:journals] || [] %>
-<% latest_journals = if User.current.wants_comments_in_reverse_order? %>
-<%   journals.first(initial_journal_count) %>
+<% if User.current.wants_comments_in_reverse_order? %>
+<%   visible_journals = journals.first(initial_journal_count) %>
+<%   cursor_journal = visible_journals.last %>
 <% else %>
-<%   journals.last(initial_journal_count) %>
+<%   visible_journals = journals.last(initial_journal_count) %>
+<%   cursor_journal = visible_journals.first %>
 <% end %>
+<% has_more = visible_journals.size < journals.size %>
+
 <% limited_tab = tab.dup %>
 <% limited_tab[:locals] = tab[:locals].dup %>
-<% limited_tab[:locals][:journals] = latest_journals %>
-<%= render partial: 'issues/tabs/history', locals: { tab: limited_tab } %>
+<% limited_tab[:locals][:journals] = visible_journals %>
+
+<%= render partial: 'issues/tabs/history', locals: {tab: limited_tab} %>
+
+<div class="lazy-load-history"
+		 data-controller="lazy-load-history"
+		 data-lazy-load-history-url-value="<%= lazy_load_history_issue_journals_path(issue_id: issue.id) %>"
+		 data-lazy-load-history-cursor-id-value="<%= cursor_journal&.id || 0 %>"
+		 data-lazy-load-history-has-more-value="<%= has_more %>">
+	<div class="lazy-load-history-footer">
+		<div class="lazy-load-history-divider">
+			<hr>
+			<div class="lazy-load-history-button-base">
+				<button type="button"
+								class="icon icon-reload"
+								data-lazy-load-history-target="button"
+								data-action="lazy-load-history#loadMore"
+								<%= has_more ? '' : 'hidden' %>>
+					<%= t('lazy_load_history.button_show_more') %>
+				</button>
+			</div>
+		</div>
+		<span class="lazy-load-history-status" data-lazy-load-history-target="status" aria-live="polite"></span>
+	</div>
+</div>
 
 <% content_for :header_tags do %>
+	<script>
+		window.lazyLoadHistory = {
+			i18n: {
+				loading: "<%= j(t('lazy_load_history.loading')) %>",
+				error: "<%= j(t('lazy_load_history.error')) %>",
+			},
+			config: {
+				initialLoadCount: <%= initial_journal_count %>,
+				loadJournalCount: <%= load_journal_count %>,
+				sortOrder: "<%= User.current.wants_comments_in_reverse_order? ? 'desc' : 'asc' %>"
+			}
+		};
+	</script>
   <%= stylesheet_link_tag 'lazy_load_history', plugin: 'redmine_lazy_load_history' %>
   <%= javascript_include_tag 'lazy_load_history', plugin: 'redmine_lazy_load_history' %>
 <% end %>

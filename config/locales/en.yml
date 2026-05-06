@@ -1,7 +1,7 @@
 # English strings go here for Rails i18n
 en:
   lazy_load_history:
-    button_load_more: Load more
+    button_show_more: Show more
     loading: Loading...
     error: Failed to load history
     settings:

@@ -1,0 +1,81 @@
+.lazy-load-history-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 5px 0;
+
+  button {
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background-color: #cccccc;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.lazy-load-history-divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: calc(100% - 50px);
+  opacity: 0.3;
+
+  hr {
+    position: absolute;
+    width: 100%;
+    margin: 0;
+    top: 50%;
+    height: 0;
+    background: none;
+    border: none;
+    border-top: 2px dashed #ccc;
+    z-index: 0;
+  }
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.lazy-load-history-button-base {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 10px;
+  background-color: white;
+  z-index: 1;
+}
+
+.lazy-load-history-status {
+  font-style: italic;
+  border-radius: 4px;
+  padding: 0.2em 0.5em;
+
+  &.error {
+    color: red;
+    background-color: #ffe6e6;
+  }
+}
+.lazy-load-history-new-journals {
+  opacity: 0;
+  animation: 1s lazyLoadHistoryFadeIn ease-in-out forwards;
+}
+
+@keyframes lazyLoadHistoryFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

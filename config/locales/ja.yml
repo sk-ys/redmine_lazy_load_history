@@ -1,7 +1,7 @@
 # Japanese strings go here for Rails i18n
 ja:
   lazy_load_history:
-    button_load_more: さらに読み込む
+    button_show_more: さらに読み込む
     loading: 読み込み中...
     error: 履歴の読み込みに失敗しました
     settings:

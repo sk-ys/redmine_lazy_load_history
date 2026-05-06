@@ -1,13 +1,13 @@
-module LazyLoadComments
+module LazyLoadHistory
   module IssuesHelperPatch
     def self.apply
-      if defined?(IssuesHelper) && !IssuesHelper.included_modules.include?(LazyLoadComments::IssuesHelperPatch)
-        IssuesHelper.include LazyLoadComments::IssuesHelperPatch
+      if defined?(IssuesHelper) && !IssuesHelper.included_modules.include?(LazyLoadHistory::IssuesHelperPatch)
+        IssuesHelper.include LazyLoadHistory::IssuesHelperPatch
       end
 
       # Support for Redmine RT plugin if it's present
-      if defined?(RedmineRt::IssuesControllerHelper) && !RedmineRt::IssuesControllerHelper.included_modules.include?(LazyLoadComments::IssuesHelperPatch)
-        RedmineRt::IssuesControllerHelper.include LazyLoadComments::IssuesHelperPatch
+      if defined?(RedmineRt::IssuesControllerHelper) && !RedmineRt::IssuesControllerHelper.included_modules.include?(LazyLoadHistory::IssuesHelperPatch)
+        RedmineRt::IssuesControllerHelper.include LazyLoadHistory::IssuesHelperPatch
       end
     end
 
@@ -15,12 +15,12 @@ module LazyLoadComments
       base.class_eval do
         def replace_history_tab_partial_with_lazy_load_history(tabs)
           if respond_to?(:request) && request
-            return tabs unless request.format.html?
+            return tabs unless request.format.html? && request.parameters[:controller] == 'issues' && request.parameters[:action] == 'show'
           end
 
           tabs.each do |tab|
             if tab[:name] == 'history'
-              # Replace the history tab partial with our lazy load comments partial
+              # Replace the history tab partial with our lazy load history partial
               tab[:partial] = 'lazy_load_history/history'
               break
             end
@@ -52,5 +52,5 @@ module LazyLoadComments
   end
 end
 
-LazyLoadComments::IssuesHelperPatch.apply
-Rails.configuration.to_prepare { LazyLoadComments::IssuesHelperPatch.apply } if defined?(Rails)
+LazyLoadHistory::IssuesHelperPatch.apply
+Rails.configuration.to_prepare { LazyLoadHistory::IssuesHelperPatch.apply } if defined?(Rails)
