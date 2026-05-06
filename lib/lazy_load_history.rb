@@ -1,1 +1,4 @@
+module LazyLoadHistory
+end
+
 require_relative 'lazy_load_history/issues_helper_patch'
