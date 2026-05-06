@@ -29,12 +29,6 @@ git clone https://github.com/sk-ys/redmine_lazy_load_history.git
 
 ### 2. Restart Redmine
 
-```bash
-touch /path/to/redmine/tmp/restart.txt
-# or
-systemctl restart redmine
-```
-
 ### 3. Configure the plugin (Optional)
 
 1. Log in to Redmine as an administrator
