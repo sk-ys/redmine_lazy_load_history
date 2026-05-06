@@ -1,0 +1,10 @@
+# English strings go here for Rails i18n
+en:
+  lazy_load_history:
+    button_load_more: Load more
+    loading: Loading...
+    error: Failed to load history
+    settings:
+      initial_load_count: Initial history entries to display
+      load_count: History entries per load
+      max_load_per_request: Maximum history entries to load per request

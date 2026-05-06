@@ -1,0 +1,18 @@
+
+  <p class="field">
+    <label for="settings_initial_load_count">
+      <%= t('lazy_load_history.settings.initial_load_count') %>
+    </label>
+    <%= number_field_tag 'settings[initial_load_count]',
+                          settings['initial_load_count'],
+                          min: 1 %>
+  </p>
+
+  <p class="field">
+    <label for="settings_load_count">
+      <%= t('lazy_load_history.settings.load_count') %>
+    </label>
+    <%= number_field_tag 'settings[load_count]',
+                          settings['load_count'],
+                          min: 1 %>
+  </p>

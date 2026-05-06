@@ -1,0 +1,17 @@
+<%# select top n journal entries %>
+<% initial_journal_count = Setting.plugin_redmine_lazy_load_history['initial_load_count'].to_i %>
+<% journals = tab[:locals][:journals] || [] %>
+<% latest_journals = if User.current.wants_comments_in_reverse_order? %>
+<%   journals.first(initial_journal_count) %>
+<% else %>
+<%   journals.last(initial_journal_count) %>
+<% end %>
+<% limited_tab = tab.dup %>
+<% limited_tab[:locals] = tab[:locals].dup %>
+<% limited_tab[:locals][:journals] = latest_journals %>
+<%= render partial: 'issues/tabs/history', locals: { tab: limited_tab } %>
+
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag 'lazy_load_history', plugin: 'redmine_lazy_load_history' %>
+  <%= javascript_include_tag 'lazy_load_history', plugin: 'redmine_lazy_load_history' %>
+<% end %>
