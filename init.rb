@@ -5,8 +5,8 @@ end
 Redmine::Plugin.register :redmine_lazy_load_history do
   name 'Redmine Lazy Load History'
   author 'sk-ys'
-  description 'This plugin modifies the issue history tab to load history entries lazily, improving performance for issues with a large number of history entries.'
-  version '0.0.1'
+  description 'This plugin lazily loads issue history entries, improving performance for issues with many history entries.'
+  version '0.1.0'
   url 'http://github.com/sk-ys/redmine_lazy_load_history'
   author_url 'http://github.com/sk-ys'
 
