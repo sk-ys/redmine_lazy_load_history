@@ -14,9 +14,9 @@ module LazyLoadHistory
         return
       end
 
-      limit = params[:limit].to_i
-      limit = Setting.plugin_redmine_lazy_load_history['load_count'].to_i if limit <= 0
-      limit = 1 if limit <= 0
+      limit = params[:limit]&.to_i
+      limit = Setting.plugin_redmine_lazy_load_history['load_count'].to_i if limit.nil?
+      # limit = 1 if limit <= 0
       # limit = 100 if limit > 100
 
       journals = ordered_journals
@@ -59,10 +59,18 @@ module LazyLoadHistory
       return [[], cursor_id, false] unless cursor_index
 
       if User.current.wants_comments_in_reverse_order?
-        chunk = journals[(cursor_index + 1), limit] || []
+        if limit <= 0
+          chunk = journals[(cursor_index + 1)..-1] || []
+        else
+          chunk = journals[(cursor_index + 1), limit] || []
+        end
       else
-        from = [cursor_index - limit, 0].max
-        chunk = journals[from...cursor_index] || []
+        if limit <= 0
+          chunk = journals[0...cursor_index] || []
+        else
+          from = [cursor_index - limit, 0].max
+          chunk = journals[from...cursor_index] || []
+        end
       end
 
       return [[], cursor_id, false] if chunk.empty?
