@@ -4,6 +4,7 @@ module LazyLoadHistory
     helper :issues
     helper :custom_fields
     helper LazyLoadHistory::UrlFixHelper
+    helper :attachments
 
     before_action :find_issue
     before_action :authorize_view_issue
