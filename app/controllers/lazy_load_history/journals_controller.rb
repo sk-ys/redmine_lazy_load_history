@@ -3,6 +3,7 @@ module LazyLoadHistory
     helper :journals
     helper :issues
     helper :custom_fields
+    helper LazyLoadHistory::UrlFixHelper
 
     before_action :find_issue
     before_action :authorize_view_issue
