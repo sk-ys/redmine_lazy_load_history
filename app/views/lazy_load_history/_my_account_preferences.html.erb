@@ -1,0 +1,18 @@
+<p>
+  <label for="pref_initial_load_count">
+    <%= t('lazy_load_history.settings.initial_load_count') %>
+  </label>
+  <%= number_field_tag 'pref[initial_load_count]',
+    user.pref[:initial_load_count]&.to_i || Setting.plugin_redmine_lazy_load_history['initial_load_count'].to_i || 0,
+    id: 'pref_initial_load_count',
+    min: 0 %>
+</p>
+<p>
+  <label for="pref_load_count">
+    <%= t('lazy_load_history.settings.load_count') %>
+  </label>
+  <%= number_field_tag 'pref[load_count]',
+    user.pref[:load_count]&.to_i || Setting.plugin_redmine_lazy_load_history['load_count'].to_i || 0,
+    id: 'pref_load_count',
+    min: 0 %>
+</p>

@@ -1,13 +1,14 @@
 <%# select top n journal entries %>
-<% initial_journal_count = Setting.plugin_redmine_lazy_load_history['initial_load_count'].to_i %>
-<% load_journal_count = Setting.plugin_redmine_lazy_load_history['load_count'].to_i %>
+<% initial_journal_count = User.current.pref[:initial_load_count]&.to_i || Setting.plugin_redmine_lazy_load_history['initial_load_count'].to_i || 0 %>
+<% load_journal_count = User.current.pref[:load_count]&.to_i || Setting.plugin_redmine_lazy_load_history['load_count'].to_i || 0 %>
 <% issue = tab[:locals][:issue] %>
 <% journals = tab[:locals][:journals] || [] %>
+<% visible_journals = journals %>
 <% if User.current.wants_comments_in_reverse_order? %>
-<%   visible_journals = journals.first(initial_journal_count) %>
+<%   visible_journals = journals.first(initial_journal_count) if initial_journal_count > 0 %>
 <%   cursor_journal = visible_journals.last %>
 <% else %>
-<%   visible_journals = journals.last(initial_journal_count) %>
+<%   visible_journals = journals.last(initial_journal_count) if initial_journal_count > 0 %>
 <%   cursor_journal = visible_journals.first %>
 <% end %>
 <% has_more = visible_journals.size < journals.size %>
