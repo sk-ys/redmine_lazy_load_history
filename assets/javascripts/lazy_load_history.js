@@ -112,10 +112,13 @@
         updateControls(state);
         updateStatus(state, i18n("loading"), false);
 
+        // If Ctrl key is pressed, load all remaining journals without limit
+        const loadJournalCount = event.ctrlKey ? 0 : state.loadJournalCount || 10;
+
         try {
             const url = new URL(state.url, window.location.origin);
             url.searchParams.set("cursor_id", String(state.cursorId));
-            url.searchParams.set("limit", String(state.loadJournalCount || 10));
+            url.searchParams.set("limit", String(loadJournalCount));
 
             const response = await fetch(url.toString(), {
                 method: "GET",
