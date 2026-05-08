@@ -54,7 +54,9 @@ User preferences override plugin defaults for that user.
 | Initial journals to display |      10 | Number of journals shown on first page load                     |
 | History entries per load    |      10 | Number of journals loaded each time the user clicks "Show more" |
 
-You can set the same values per user from **My account**.
+##### Notes
+- You can set the same values per user from **My account**.
+- Set the value to `0` to load everything at once.
 
 ## How to use
 
