@@ -108,6 +108,15 @@
         if (event) event.preventDefault();
         if (state.loading || !state.hasMore || !state.cursorId) return;
 
+        // Remove title attribute
+        if ($(state.buttonElement).tooltip("instance")) {
+            $(state.buttonElement).tooltip("close").removeAttr("title");
+            setTimeout(() => {
+                $(state.buttonElement).tooltip("instance") &&
+                    $(state.buttonElement).tooltip("destroy").removeAttr("title");
+            }, 500);
+        }
+
         state.loading = true;
         updateControls(state);
         updateStatus(state, i18n("loading"), false);
