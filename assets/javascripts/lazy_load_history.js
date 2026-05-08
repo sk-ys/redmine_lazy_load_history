@@ -112,8 +112,8 @@
         updateControls(state);
         updateStatus(state, i18n("loading"), false);
 
-        // If Ctrl key is pressed, load all remaining journals without limit
-        const loadJournalCount = event.ctrlKey ? 0 : state.loadJournalCount || 10;
+        // If Shift key is pressed, load all remaining journals without limit
+        const loadJournalCount = event?.shiftKey ? 0 : state.loadJournalCount || 10;
 
         try {
             const url = new URL(state.url, window.location.origin);
