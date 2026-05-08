@@ -102,6 +102,8 @@
                 entry.classList.remove("lazy-load-history-new-journals");
             });
         }, 1500);
+
+        return newEntries;
     }
 
     async function loadMore(state, event) {
@@ -141,11 +143,25 @@
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
             const payload = await response.json();
-            const html = payload.html || "";
-            if (html.length > 0) insertJournals(state, html);
-
             state.cursorId = Number(payload.next_cursor_id || state.cursorId);
             state.hasMore = Boolean(payload.has_more);
+
+            const html = payload.html || "";
+            if (html.length > 0) {
+                const loadedJournals = insertJournals(state, html);
+
+                if (loadedJournals?.length > 0) {
+                    state.container.dispatchEvent(
+                        new CustomEvent("lazyLoadHistory:loaded", {
+                            detail: {
+                                cursorId: state.cursorId,
+                                hasMore: state.hasMore,
+                                loadedJournals: loadedJournals,
+                            }
+                        })
+                    );
+                }
+            }
 
             // Clear status message on successful load
             updateStatus(state, "", false);
