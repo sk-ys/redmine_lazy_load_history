@@ -12,7 +12,7 @@ This improves page load performance for issues with many history entries.
 - **On-Demand Loading**: Load older journals with a single button click
 - **Quick Full Load**: Shift + click on "Show more" to load all remaining journals at once
 - **Custom Event Hook**: Emits a `lazyLoadHistory:loaded` event after journals are loaded
-- **Configurable**: Set the initial display count and load count per request via Administration
+- **Configurable**: Set the initial display count and load count per request via Administration or each user's My account preferences
 - **RedmineRT Plugin Compatible**: Supports the [RedmineRT](https://github.com/MayamaTakeshi/redmine_rt) plugin's alternative history tab
 - **Redmine Extra Notes Plugin Compatible**: Supports the [Redmine Extra Notes](https://github.com/sk-ys/redmine_extra_notes) plugin's extra note tabs
 
@@ -38,12 +38,23 @@ git clone https://github.com/sk-ys/redmine_lazy_load_history.git
 3. Find **Redmine Lazy Load History** and click **Configure**
 4. Adjust settings as needed and save
 
+### 4. Configure user preferences (Optional)
+
+1. Open **My account**
+2. In Preferences, set:
+	- **Initial history entries to display**
+	- **History entries per load**
+
+User preferences override plugin defaults for that user.
+
 #### Configuration
 
 | Setting                     | Default | Description                                                     |
 | --------------------------- | ------: | --------------------------------------------------------------- |
 | Initial journals to display |      10 | Number of journals shown on first page load                     |
 | History entries per load    |      10 | Number of journals loaded each time the user clicks "Show more" |
+
+You can set the same values per user from **My account**.
 
 ## How to use
 
