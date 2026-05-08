@@ -10,6 +10,8 @@ This improves page load performance for issues with many history entries.
 
 - **Progressive Loading**: Display only the latest N journals initially
 - **On-Demand Loading**: Load older journals with a single button click
+- **Quick Full Load**: Shift + click on "Show more" to load all remaining journals at once
+- **Custom Event Hook**: Emits a `lazyLoadHistory:loaded` event after journals are loaded
 - **Configurable**: Set the initial display count and load count per request via Administration
 - **RedmineRT Plugin Compatible**: Supports the [RedmineRT](https://github.com/MayamaTakeshi/redmine_rt) plugin's alternative history tab
 - **Redmine Extra Notes Plugin Compatible**: Supports the [Redmine Extra Notes](https://github.com/sk-ys/redmine_extra_notes) plugin's extra note tabs
@@ -50,6 +52,33 @@ git clone https://github.com/sk-ys/redmine_lazy_load_history.git
 3. If older entries exist, click **"Show more"** under the history tab.
 4. Repeat **"Show more"** to load the next batch of older entries.
 5. Continue until the button disappears (all available history entries are loaded).
+
+### Load all remaining journals
+
+- Hold **Shift** and click **"Show more"** to load all remaining journals in a single request.
+
+### Custom event
+
+This plugin dispatches a custom event after journals are successfully loaded.
+
+- Event name: `lazyLoadHistory:loaded`
+- Dispatch target: `.lazy-load-history` container
+- Trigger timing: After successful fetch and journal insertion
+- `event.detail`:
+	- `cursorId` (`number`): Next cursor id
+	- `hasMore` (`boolean`): Whether more journals remain
+	- `loadedJournals` (`Element[]`): Inserted journal DOM elements
+
+Example:
+
+```javascript
+document.querySelectorAll(".lazy-load-history").forEach((container) => {
+	container.addEventListener("lazyLoadHistory:loaded", (event) => {
+		const { cursorId, hasMore, loadedJournals } = event.detail;
+		console.log("Loaded journals:", loadedJournals.length, { cursorId, hasMore });
+	});
+});
+```
 
 ## Troubleshooting
 
