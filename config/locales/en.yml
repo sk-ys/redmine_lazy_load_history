@@ -2,6 +2,7 @@
 en:
   lazy_load_history:
     button_show_more: Show more
+    title_button_show_more: Show more history (Shift + click to load all remaining)
     loading: Loading...
     error: Failed to load history
     settings:

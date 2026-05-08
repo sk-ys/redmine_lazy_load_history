@@ -108,14 +108,26 @@
         if (event) event.preventDefault();
         if (state.loading || !state.hasMore || !state.cursorId) return;
 
+        // Remove title attribute
+        if ($(state.buttonElement).tooltip("instance")) {
+            $(state.buttonElement).tooltip("close").removeAttr("title");
+            setTimeout(() => {
+                $(state.buttonElement).tooltip("instance") &&
+                    $(state.buttonElement).tooltip("destroy").removeAttr("title");
+            }, 500);
+        }
+
         state.loading = true;
         updateControls(state);
         updateStatus(state, i18n("loading"), false);
 
+        // If Shift key is pressed, load all remaining journals without limit
+        const loadJournalCount = event?.shiftKey ? 0 : state.loadJournalCount || 10;
+
         try {
             const url = new URL(state.url, window.location.origin);
             url.searchParams.set("cursor_id", String(state.cursorId));
-            url.searchParams.set("limit", String(state.loadJournalCount || 10));
+            url.searchParams.set("limit", String(loadJournalCount));
 
             const response = await fetch(url.toString(), {
                 method: "GET",
