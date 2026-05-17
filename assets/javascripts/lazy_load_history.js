@@ -242,6 +242,7 @@
         document.querySelectorAll(".lazy-load-history").forEach(initContainer);
     }
 
+    // Expose initContainer and initAll to the global scope for external usage
     window.lazyLoadHistory.initContainer = initContainer;
     window.lazyLoadHistory.initAll = initAll;
 
