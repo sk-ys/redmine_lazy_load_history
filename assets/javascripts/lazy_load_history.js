@@ -1,4 +1,6 @@
 (() => {
+    window.lazyLoadHistory = window.lazyLoadHistory || {};
+
     function i18n(key) {
         if (window.lazyLoadHistory?.i18n && window.lazyLoadHistory.i18n[key]) {
             return window.lazyLoadHistory.i18n[key];
@@ -239,6 +241,9 @@
     function initAll() {
         document.querySelectorAll(".lazy-load-history").forEach(initContainer);
     }
+
+    window.lazyLoadHistory.initContainer = initContainer;
+    window.lazyLoadHistory.initAll = initAll;
 
     document.addEventListener("DOMContentLoaded", initAll);
     document.addEventListener("turbo:load", initAll);
