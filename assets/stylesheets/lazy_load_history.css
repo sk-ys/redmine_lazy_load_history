@@ -6,6 +6,7 @@
 
   button {
     cursor: pointer;
+    white-space: nowrap;
 
     &:hover:not(:disabled) {
       background-color: #cccccc;
@@ -24,15 +25,14 @@
 
 .lazy-load-history-divider {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   position: relative;
   width: calc(100% - 50px);
   opacity: 0.3;
 
   hr {
-    position: absolute;
-    width: 100%;
+    flex: 1 1 auto;
     margin: 0;
     top: calc(50% - 1px);
     height: 0;
@@ -52,7 +52,6 @@
   flex-direction: column;
   align-items: center;
   padding: 0 10px;
-  background-color: white;
   z-index: 1;
 }
 
