@@ -1,6 +1,4 @@
-unless Rails.application.config.eager_load
-  require_relative 'lib/lazy_load_history'
-end
+require_relative 'lib/lazy_load_history'
 
 Redmine::Plugin.register :redmine_lazy_load_history do
   name 'Redmine Lazy Load History'
