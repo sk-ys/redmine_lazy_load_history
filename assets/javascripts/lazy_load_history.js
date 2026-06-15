@@ -1,9 +1,13 @@
 (() => {
     window.lazyLoadHistory = window.lazyLoadHistory || {};
 
-    function i18n(key) {
+    function i18n(key, variables = {}) {
         if (window.lazyLoadHistory?.i18n && window.lazyLoadHistory.i18n[key]) {
-            return window.lazyLoadHistory.i18n[key];
+            let translation = window.lazyLoadHistory.i18n[key];
+            Object.keys(variables).forEach((varKey) => {
+                translation = translation.replace(`%{${varKey}}`, variables[varKey]);
+            });
+            return translation;
         }
         return "";
     }
@@ -13,7 +17,9 @@
         return {
             url: d.lazyLoadHistoryUrlValue,
             cursorId: Number(d.lazyLoadHistoryCursorIdValue || 0),
-            hasMore: d.lazyLoadHistoryHasMoreValue === "true",
+            totalSize: Number(d.lazyLoadHistoryTotalSizeValue || 0),
+            loadedSize: Number(d.lazyLoadHistoryLoadedSizeValue || 0),
+            remainingSize: Number(d.lazyLoadHistoryRemainingSizeValue || 0),
         };
     }
 
@@ -49,19 +55,31 @@
 
     function updateControls(state) {
         const shouldShow =
-            state.hasMore && isHistoryTabSelected(state.container, state.tabsElement);
+            state.remainingSize > 0 && isHistoryTabSelected(state.container, state.tabsElement);
 
         if (state.actionsElement) {
             state.actionsElement.hidden = !shouldShow;
         }
 
         if (state.buttonElement) {
-            state.buttonElement.hidden = !state.hasMore;
+            state.buttonElement.hidden = state.remainingSize <= 0;
             state.buttonElement.disabled = state.loading || !shouldShow;
         }
 
         if (!shouldShow) {
             updateStatus(state, "", false);
+        }
+
+        if (!state.loading) {
+            state.container.dataset.lazyLoadHistoryTotalSizeValue = String(state.totalSize);
+            state.container.dataset.lazyLoadHistoryLoadedSizeValue = String(state.loadedSize);
+            state.container.dataset.lazyLoadHistoryRemainingSizeValue = String(state.remainingSize);
+
+            document.querySelector(
+                ".lazy-load-history-remaining-count",
+            ).textContent = i18n("remainingItemsCount", {
+                count: state.remainingSize,
+            });
         }
     }
 
@@ -110,7 +128,7 @@
 
     async function loadMore(state, event) {
         if (event) event.preventDefault();
-        if (state.loading || !state.hasMore || !state.cursorId) return;
+        if (state.loading || state.remainingSize <= 0 || !state.cursorId) return;
 
         // Remove title attribute
         if ($(state.buttonElement).tooltip("instance")) {
@@ -145,8 +163,24 @@
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
             const payload = await response.json();
-            state.cursorId = Number(payload.next_cursor_id || state.cursorId);
-            state.hasMore = Boolean(payload.has_more);
+            state.cursorId = Number(
+                payload.next_cursor_id == null
+                    ? state.cursorId
+                    : payload.next_cursor_id,
+            );
+            state.totalSize = Number(
+                payload.total_size == null ? state.totalSize : payload.total_size,
+            );
+            state.loadedSize = Number(
+                payload.loaded_size == null
+                    ? state.loadedSize
+                    : payload.loaded_size,
+            );
+            state.remainingSize = Number(
+                payload.remaining_size == null
+                    ? state.remainingSize
+                    : payload.remaining_size,
+            );
 
             const html = payload.html || "";
             if (html.length > 0) {
@@ -157,7 +191,9 @@
                         new CustomEvent("lazyLoadHistory:loaded", {
                             detail: {
                                 cursorId: state.cursorId,
-                                hasMore: state.hasMore,
+                                totalSize: state.totalSize,
+                                loadedSize: state.loadedSize,
+                                remainingSize: state.remainingSize,
                                 loadedJournals: loadedJournals,
                             }
                         })
@@ -213,7 +249,9 @@
             cursorId: config.cursorId,
             loadJournalCount: window.lazyLoadHistory?.config?.loadJournalCount || 10,
             sortOrder: window.lazyLoadHistory?.config?.sortOrder || "asc",
-            hasMore: config.hasMore,
+            totalSize: config.totalSize,
+            loadedSize: config.loadedSize,
+            remainingSize: config.remainingSize,
         };
 
         if (actionsElement && tabsElement) {

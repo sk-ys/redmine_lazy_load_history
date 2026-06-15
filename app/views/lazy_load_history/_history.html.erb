@@ -23,7 +23,9 @@
 		 data-controller="lazy-load-history"
 		 data-lazy-load-history-url-value="<%= lazy_load_history_issue_journals_path(issue_id: issue.id) %>"
 		 data-lazy-load-history-cursor-id-value="<%= cursor_journal&.id || 0 %>"
-		 data-lazy-load-history-has-more-value="<%= has_more %>">
+		 data-lazy-load-history-total-size-value="<%= journals.size %>"
+		 data-lazy-load-history-loaded-size-value="<%= visible_journals.size %>"
+		 data-lazy-load-history-remaining-size-value="<%= journals.size - visible_journals.size %>">
 	<div class="lazy-load-history-footer">
 		<div class="lazy-load-history-divider">
 			<hr>
@@ -34,6 +36,9 @@
 								data-action="lazy-load-history#loadMore"
 								<%= has_more ? '' : 'hidden' %>>
 					<%= t('lazy_load_history.button_show_more') %>
+					(<span class="lazy-load-history-remaining-count" data-lazy-load-history-target="remainingCount" aria-hidden="true">
+						<%= t('lazy_load_history.remaining_items_count', count: journals.size - visible_journals.size) %>
+					</span>)
 				</button>
 			</div>
 			<hr>
@@ -48,6 +53,7 @@
 			i18n: {
 				loading: "<%= j(t('lazy_load_history.loading')) %>",
 				error: "<%= j(t('lazy_load_history.error')) %>",
+				remainingItemsCount: "<%= j(t('lazy_load_history.remaining_items_count', count: '%{count}')) %>"
 			},
 			config: {
 				initialLoadCount: <%= initial_journal_count %>,

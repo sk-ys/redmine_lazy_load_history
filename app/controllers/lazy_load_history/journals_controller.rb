@@ -22,7 +22,7 @@ module LazyLoadHistory
       # limit = 100 if limit > 100
 
       journals = ordered_journals
-      chunk, next_cursor_id, has_more = older_journals_chunk(journals, cursor_id, limit)
+      chunk, next_cursor_id, remaining_size = older_journals_chunk(journals, cursor_id, limit)
 
       html = render_to_string(
         partial: 'lazy_load_history/journals',
@@ -33,8 +33,9 @@ module LazyLoadHistory
       render json: {
         html: html,
         next_cursor_id: next_cursor_id,
-        has_more: has_more,
-        loaded_count: chunk.size
+        total_size: journals.size,
+        loaded_size: chunk.size,
+        remaining_size: remaining_size
       }
     end
 
@@ -58,7 +59,7 @@ module LazyLoadHistory
 
     def older_journals_chunk(journals, cursor_id, limit)
       cursor_index = journals.index { |journal| journal.id == cursor_id }
-      return [[], cursor_id, false] unless cursor_index
+      return [[], cursor_id, 0] unless cursor_index
 
       if User.current.wants_comments_in_reverse_order?
         if limit <= 0
@@ -75,7 +76,7 @@ module LazyLoadHistory
         end
       end
 
-      return [[], cursor_id, false] if chunk.empty?
+      return [[], cursor_id, 0] if chunk.empty?
 
       next_cursor_id = if User.current.wants_comments_in_reverse_order?
         chunk.last.id
@@ -83,13 +84,13 @@ module LazyLoadHistory
         chunk.first.id
       end
 
-      has_more = if User.current.wants_comments_in_reverse_order?
-        journals.index { |journal| journal.id == next_cursor_id } < journals.size - 1
+      remaining_count = if User.current.wants_comments_in_reverse_order?
+        journals.size - journals.index { |journal| journal.id == next_cursor_id } - chunk.size
       else
-        journals.index { |journal| journal.id == next_cursor_id } > 0
+        journals.index { |journal| journal.id == next_cursor_id }
       end
-
-      [chunk, next_cursor_id, has_more]
+      remaining_size = remaining_count
+      [chunk, next_cursor_id, remaining_size]
     end
   end
 end

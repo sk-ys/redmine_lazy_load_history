@@ -5,6 +5,7 @@ en:
     title_button_show_more: Show more history (Shift + click to load all remaining)
     loading: Loading...
     error: Failed to load history
+    remaining_items_count: "%{count} item(s)"
     settings:
       initial_load_count: Initial history entries to display
       load_count: History entries per load
