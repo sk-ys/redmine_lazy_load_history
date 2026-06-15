@@ -21,8 +21,11 @@ module LazyLoadHistory
       # limit = 1 if limit <= 0
       # limit = 100 if limit > 100
 
+      change_id = params[:change_id]&.to_i
+      note_id = params[:note_id]&.to_i
+
       journals = ordered_journals
-      chunk, next_cursor_id, remaining_size = older_journals_chunk(journals, cursor_id, limit)
+      chunk, next_cursor_id, remaining_size = older_journals_chunk(journals, cursor_id, limit, change_id, note_id)
 
       html = render_to_string(
         partial: 'lazy_load_history/journals',
@@ -57,9 +60,17 @@ module LazyLoadHistory
       journals
     end
 
-    def older_journals_chunk(journals, cursor_id, limit)
+    def older_journals_chunk(journals, cursor_id, limit, change_id = nil, note_id = nil)
       cursor_index = journals.index { |journal| journal.id == cursor_id }
       return [[], cursor_id, 0] unless cursor_index
+
+      if change_id
+        change_index = journals.index { |journal| journal.id == change_id }
+        limit = change_index - cursor_index if change_index && change_index < cursor_index
+      elsif note_id
+        note_index = journals.index { |journal| journal.indice == note_id }
+        limit = note_index - cursor_index if note_index && note_index < cursor_index
+      end
 
       if User.current.wants_comments_in_reverse_order?
         if limit <= 0

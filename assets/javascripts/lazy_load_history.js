@@ -164,6 +164,12 @@
       url.searchParams.set("cursor_id", String(state.cursorId));
       url.searchParams.set("limit", String(loadJournalCount));
 
+      if (state.changeId) {
+        url.searchParams.set("change_id", state.changeId);
+      } else if (state.noteId) {
+        url.searchParams.set("note_id", state.noteId);
+      }
+
       const response = await fetch(url.toString(), {
         method: "GET",
         headers: {
@@ -225,6 +231,49 @@
 
   function initContainer(container) {
     if (!container) return;
+
+    
+    const changeHashMatch = location.hash.match("#change-([0-9]+)")
+    if (changeHashMatch) {
+      const changeId = parseInt(changeHashMatch[1]);
+      const targetEntry = container.parentElement.querySelector(
+        `div[id='${changeId}']`,
+      );
+      if (!targetEntry) {
+        loadMore(
+          {
+            container,
+            url: container.dataset.lazyLoadHistoryUrlValue,
+            cursorId: Number(container.dataset.lazyLoadHistoryCursorIdValue || 0),
+            loadJournalCount: 0, // Load all journals to find the target entry
+            sortOrder: window.lazyLoadHistory?.config?.sortOrder || "asc",
+            changeId: changeId,
+          },
+          null,
+        );
+      }
+    }
+
+    const noteHashMatch = location.hash.match("#note-([0-9]+)")
+    if (noteHashMatch) {
+      const noteId = parseInt(noteHashMatch[1]);
+      const targetEntry = container.parentElement.querySelector(
+        `div[id='${noteId}']`,
+      );
+      if (!targetEntry) {
+        loadMore(
+          {
+            container,
+            url: container.dataset.lazyLoadHistoryUrlValue,
+            cursorId: Number(container.dataset.lazyLoadHistoryCursorIdValue || 0),
+            loadJournalCount: 0, // Load all journals to find the target entry
+            sortOrder: window.lazyLoadHistory?.config?.sortOrder || "asc",
+            noteId: noteId,
+          },
+          null,
+        );
+      }
+    }
 
     if (container.dataset.lazyLoadHistoryInitialized === "true") return;
     container.dataset.lazyLoadHistoryInitialized = "true";
@@ -296,4 +345,6 @@
 
   document.addEventListener("DOMContentLoaded", initAll);
   document.addEventListener("turbo:load", initAll);
+  window.addEventListener("popstate", initAll);
 })();
+console.log("[lazy-load-history] script loaded");
