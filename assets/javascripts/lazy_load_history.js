@@ -49,9 +49,10 @@
   }
 
   function updateStatus(state, message, isError = false) {
-    if (state.statusElement) {
-      state.statusElement.textContent = message;
-      state.statusElement.classList.toggle("error", isError);
+    const { statusElement } = getContainerElements(state.container);
+    if (statusElement) {
+      statusElement.textContent = message;
+      statusElement.classList.toggle("error", isError);
     }
   }
 
@@ -59,14 +60,17 @@
     const shouldShow =
       state.remainingSize > 0 &&
       isHistoryTabSelected(state.container, state.tabsElement);
+      
+    const { actionsElement, buttonElement } =
+      getContainerElements(state.container);
 
-    if (state.actionsElement) {
-      state.actionsElement.hidden = !shouldShow;
+    if (actionsElement) {
+      actionsElement.hidden = !shouldShow;
     }
 
-    if (state.buttonElement) {
-      state.buttonElement.hidden = state.remainingSize <= 0;
-      state.buttonElement.disabled = state.loading || !shouldShow;
+    if (buttonElement) {
+      buttonElement.hidden = state.remainingSize <= 0;
+      buttonElement.disabled = state.loading || !shouldShow;
     }
 
     if (!shouldShow) {
@@ -74,6 +78,9 @@
     }
 
     if (!state.loading) {
+      state.container.dataset.lazyLoadHistoryCursorIdValue = String(
+        state.cursorId,
+      );
       state.container.dataset.lazyLoadHistoryTotalSizeValue = String(
         state.totalSize,
       );
@@ -128,7 +135,9 @@
     }
 
     // Trigger click on the currently selected tab to refresh the view and ensure new entries are displayed correctly
+    const urlHash = location.hash;
     $("#history .tabs .selected").trigger("click");
+    if (urlHash) location.hash = urlHash; // Restore hash
 
     setTimeout(() => {
       newEntries.forEach((entry) => {
@@ -144,11 +153,12 @@
     if (state.loading || state.remainingSize <= 0 || !state.cursorId) return;
 
     // Remove title attribute
-    if ($(state.buttonElement).tooltip("instance")) {
-      $(state.buttonElement).tooltip("close").removeAttr("title");
+    const { buttonElement } = getContainerElements(state.container);
+    if ($(buttonElement).tooltip("instance")) {
+      $(buttonElement).tooltip("close").removeAttr("title");
       setTimeout(() => {
-        $(state.buttonElement).tooltip("instance") &&
-          $(state.buttonElement).tooltip("destroy").removeAttr("title");
+        $(buttonElement).tooltip("instance") &&
+          $(buttonElement).tooltip("destroy").removeAttr("title");
       }, 500);
     }
 
@@ -228,81 +238,31 @@
       updateControls(state);
     }
   }
-
-  function initContainer(container) {
-    if (!container) return;
-
+  
+  function getContainerElements(container) {
+    if (!container) return {};
     
-    const changeHashMatch = location.hash.match("#change-([0-9]+)")
-    if (changeHashMatch) {
-      const changeId = parseInt(changeHashMatch[1]);
-      const targetEntry = container.parentElement.querySelector(
-        `div[id='${changeId}']`,
-      );
-      if (!targetEntry) {
-        loadMore(
-          {
-            container,
-            url: container.dataset.lazyLoadHistoryUrlValue,
-            cursorId: Number(container.dataset.lazyLoadHistoryCursorIdValue || 0),
-            loadJournalCount: 0, // Load all journals to find the target entry
-            sortOrder: window.lazyLoadHistory?.config?.sortOrder || "asc",
-            changeId: changeId,
-          },
-          null,
-        );
-      }
-    }
-
-    const noteHashMatch = location.hash.match("#note-([0-9]+)")
-    if (noteHashMatch) {
-      const noteId = parseInt(noteHashMatch[1]);
-      const targetEntry = container.parentElement.querySelector(
-        `div[id='${noteId}']`,
-      );
-      if (!targetEntry) {
-        loadMore(
-          {
-            container,
-            url: container.dataset.lazyLoadHistoryUrlValue,
-            cursorId: Number(container.dataset.lazyLoadHistoryCursorIdValue || 0),
-            loadJournalCount: 0, // Load all journals to find the target entry
-            sortOrder: window.lazyLoadHistory?.config?.sortOrder || "asc",
-            noteId: noteId,
-          },
-          null,
-        );
-      }
-    }
-
-    if (container.dataset.lazyLoadHistoryInitialized === "true") return;
-    container.dataset.lazyLoadHistoryInitialized = "true";
-
     const actionsElement = container.querySelector(".lazy-load-history-footer");
-
-    if (!actionsElement) {
-      console.warn(
-        "[lazy-load-history] Actions element not found in container",
-        container,
-      );
-      return;
-    }
-
-    const buttonElement = actionsElement.querySelector(
+    const buttonElement = actionsElement?.querySelector(
       "button[data-action='lazy-load-history#loadMore']",
     );
     const statusElement = container.querySelector(
       "[data-lazy-load-history-target='status']",
     );
     const tabsElement = document.querySelector("#history .tabs");
-
-    const config = readConfig(container);
-    const state = {
-      container,
+    
+    return {
       actionsElement,
       buttonElement,
       statusElement,
       tabsElement,
+    };
+  }
+  
+  function loadStateFromContainer(container) {
+    const config = readConfig(container);
+    return {
+      container,
       loading: false,
       url: config.url,
       cursorId: config.cursorId,
@@ -312,6 +272,25 @@
       loadedSize: config.loadedSize,
       remainingSize: config.remainingSize,
     };
+  }
+
+  function initContainer(container) {
+    if (!container) return;
+
+    if (container.dataset.lazyLoadHistoryInitialized === "true") return;
+    container.dataset.lazyLoadHistoryInitialized = "true";
+
+    const { actionsElement, buttonElement, tabsElement } = getContainerElements(container);
+
+    if (!actionsElement) {
+      console.warn(
+        "[lazy-load-history] Actions element not found in container",
+        container,
+      );
+      return;
+    }
+
+    const state = loadStateFromContainer(container);
 
     if (actionsElement && tabsElement) {
       if (state.sortOrder === "asc") {
@@ -321,13 +300,15 @@
     }
 
     if (buttonElement) {
-      buttonElement.addEventListener("click", (event) =>
-        loadMore(state, event),
-      );
+      buttonElement.addEventListener("click", (event) => {
+        const state = loadStateFromContainer(container);
+        loadMore(state, event);
+      });
     }
 
     if (tabsElement) {
       tabsElement.addEventListener("click", () => {
+        const state = loadStateFromContainer(container);
         requestAnimationFrame(() => updateControls(state));
       });
     }
@@ -335,8 +316,62 @@
     updateControls(state);
   }
 
+  function loadContentFromHash(container) {
+    if (!container) return;
+
+    const changeHashMatch = location.hash.match("#change-([0-9]+)");
+    if (changeHashMatch) {
+      const changeId = parseInt(changeHashMatch[1]);
+      const targetEntry = container.parentElement.querySelector(
+        `#change-${changeId}`,
+      );
+      if (!targetEntry) {
+        loadMore(
+          {
+            container,
+            url: container.dataset.lazyLoadHistoryUrlValue,
+            cursorId: Number(
+              container.dataset.lazyLoadHistoryCursorIdValue || 0,
+            ),
+            loadJournalCount: 0, // Load all journals to find the target entry
+            sortOrder: window.lazyLoadHistory?.config?.sortOrder || "asc",
+            changeId: changeId,
+          },
+          null,
+        );
+      }
+    }
+
+    const noteHashMatch = location.hash.match("#note-([0-9]+)");
+    if (noteHashMatch) {
+      const noteId = parseInt(noteHashMatch[1]);
+      const targetEntry = container.parentElement.querySelector(
+        `#note-${noteId}`,
+      );
+      if (!targetEntry) {
+        loadMore(
+          {
+            container,
+            url: container.dataset.lazyLoadHistoryUrlValue,
+            cursorId: Number(
+              container.dataset.lazyLoadHistoryCursorIdValue || 0,
+            ),
+            loadJournalCount: 0, // Load all journals to find the target entry
+            sortOrder: window.lazyLoadHistory?.config?.sortOrder || "asc",
+            noteId: noteId,
+          },
+          null,
+        );
+      }
+    }
+  }
+
   function initAll() {
-    document.querySelectorAll(".lazy-load-history").forEach(initContainer);
+    const container = document.querySelector(".lazy-load-history");
+    if (!container) return;
+
+    initContainer(container);
+    loadContentFromHash(container);
   }
 
   // Expose initContainer and initAll to the global scope for external usage
@@ -347,4 +382,3 @@
   document.addEventListener("turbo:load", initAll);
   window.addEventListener("popstate", initAll);
 })();
-console.log("[lazy-load-history] script loaded");
