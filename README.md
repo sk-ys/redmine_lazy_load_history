@@ -1,5 +1,7 @@
 # Redmine Lazy Load History
 
+![](doc/images/screenshot.png)
+
 ## Overview
 
 This is a Redmine plugin that progressively loads issue history on demand. Instead of loading all journals at once, it displays only the latest N entries initially and allows users to load older entries by clicking a "Show more" button.
