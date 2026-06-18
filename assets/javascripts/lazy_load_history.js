@@ -318,6 +318,8 @@
 
   function loadContentFromHash(container) {
     if (!container) return;
+    
+    const state = loadStateFromContainer(container);
 
     const changeHashMatch = location.hash.match("#change-([0-9]+)");
     if (changeHashMatch) {
@@ -328,14 +330,11 @@
       if (!targetEntry) {
         loadMore(
           {
-            container,
-            url: container.dataset.lazyLoadHistoryUrlValue,
-            cursorId: Number(
-              container.dataset.lazyLoadHistoryCursorIdValue || 0,
-            ),
-            loadJournalCount: 0, // Load all journals to find the target entry
-            sortOrder: window.lazyLoadHistory?.config?.sortOrder || "asc",
-            changeId: changeId,
+            ...state,
+            ...{
+              loadJournalCount: 0,
+              changeId: changeId,
+            },
           },
           null,
         );
@@ -351,14 +350,11 @@
       if (!targetEntry) {
         loadMore(
           {
-            container,
-            url: container.dataset.lazyLoadHistoryUrlValue,
-            cursorId: Number(
-              container.dataset.lazyLoadHistoryCursorIdValue || 0,
-            ),
-            loadJournalCount: 0, // Load all journals to find the target entry
-            sortOrder: window.lazyLoadHistory?.config?.sortOrder || "asc",
-            noteId: noteId,
+            ...state,
+            ...{
+              loadJournalCount: 0,
+              noteId: noteId,
+            },
           },
           null,
         );
