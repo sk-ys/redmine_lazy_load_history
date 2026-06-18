@@ -21,8 +21,17 @@ module LazyLoadHistory
       # limit = 1 if limit <= 0
       # limit = 100 if limit > 100
 
+      change_id = params[:change_id]&.to_i
+      note_id = params[:note_id]&.to_i
+
       journals = ordered_journals
-      chunk, next_cursor_id, remaining_size = older_journals_chunk(journals, cursor_id, limit)
+      chunk, next_cursor_id = older_journals_chunk(journals, cursor_id, limit, change_id, note_id)
+
+      remaining_size = if User.current.wants_comments_in_reverse_order?
+        journals.size - journals.index { |journal| journal.id == next_cursor_id } - chunk.size
+      else
+        journals.index { |journal| journal.id == next_cursor_id }
+      end
 
       html = render_to_string(
         partial: 'lazy_load_history/journals',
@@ -57,9 +66,24 @@ module LazyLoadHistory
       journals
     end
 
-    def older_journals_chunk(journals, cursor_id, limit)
+    def older_journals_chunk(journals, cursor_id, limit, change_id = nil, note_id = nil)
       cursor_index = journals.index { |journal| journal.id == cursor_id }
-      return [[], cursor_id, 0] unless cursor_index
+      return [[], cursor_id] unless cursor_index
+
+      if change_id || note_id
+        if change_id
+          change_index = journals.index { |journal| journal.id == change_id }
+        elsif note_id
+          change_index = journals.index { |journal| journal.indice == note_id }
+        end
+        
+        if change_index && change_index < cursor_index
+          limit = cursor_index - change_index
+        else
+          # Abort if the specified change_id or note_id is not found
+          return [[], cursor_id]
+        end
+      end
 
       if User.current.wants_comments_in_reverse_order?
         if limit <= 0
@@ -76,7 +100,7 @@ module LazyLoadHistory
         end
       end
 
-      return [[], cursor_id, 0] if chunk.empty?
+      return [[], cursor_id] if chunk.empty?
 
       next_cursor_id = if User.current.wants_comments_in_reverse_order?
         chunk.last.id
@@ -84,13 +108,7 @@ module LazyLoadHistory
         chunk.first.id
       end
 
-      remaining_count = if User.current.wants_comments_in_reverse_order?
-        journals.size - journals.index { |journal| journal.id == next_cursor_id } - chunk.size
-      else
-        journals.index { |journal| journal.id == next_cursor_id }
-      end
-      remaining_size = remaining_count
-      [chunk, next_cursor_id, remaining_size]
+      [chunk, next_cursor_id]
     end
   end
 end

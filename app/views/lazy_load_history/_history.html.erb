@@ -19,7 +19,7 @@
 
 <%= render partial: 'issues/tabs/history', locals: {tab: limited_tab} %>
 
-<div class="lazy-load-history"
+<div id="lazy-load-history"
 		 data-controller="lazy-load-history"
 		 data-lazy-load-history-url-value="<%= lazy_load_history_issue_journals_path(issue_id: issue.id) %>"
 		 data-lazy-load-history-cursor-id-value="<%= cursor_journal&.id || 0 %>"
