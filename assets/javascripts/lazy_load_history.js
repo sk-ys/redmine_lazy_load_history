@@ -367,7 +367,8 @@
   }
 
   function initAll() {
-    const container = document.querySelector(".lazy-load-history");
+    const container =
+      document.getElementById("lazy-load-history");
     if (!container) return;
 
     initContainer(container);
